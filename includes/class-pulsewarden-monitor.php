@@ -494,7 +494,14 @@ class PulseWarden_Monitor {
 			. '<a href="' . esc_url( $link ) . '" style="display:inline-block;background:#12704c;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:12px 20px;border-radius:10px;">' . esc_html__( 'Open the dashboard', 'pulsewarden' ) . '</a>'
 			. '<p style="margin:20px 0 0;font-size:16px;color:#5f6f68;">' . esc_html__( 'You get one email when a problem starts and one when it is over.', 'pulsewarden' ) . '</p>'
 			. '</div></div></div>';
-		return wp_mail( PulseWarden_Settings::recipients(), $subject, $body, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		// Send from the store's own address. Many hosts reject the default wordpress@ sender.
+		$from = get_option( 'woocommerce_email_from_address' );
+		if ( is_email( $from ) ) {
+			$name      = get_option( 'woocommerce_email_from_name' );
+			$headers[] = 'From: ' . str_replace( array( "\r", "\n", '<', '>' ), '', $name ? $name : $site ) . ' <' . $from . '>';
+		}
+		return wp_mail( PulseWarden_Settings::recipients(), $subject, $body, $headers );
 	}
 
 	/* ------------------------------------------------------------------
