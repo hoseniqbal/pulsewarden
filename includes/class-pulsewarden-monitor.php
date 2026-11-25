@@ -435,6 +435,13 @@ class PulseWarden_Monitor {
 					'since' => time(),
 				);
 				PulseWarden_Store::log( 'alert', 0, $key . '|open|' . $res['text'] );
+				/**
+				 * A health problem started.
+				 *
+				 * @param string $key  Check key: heartbeat, failed, errors or tasks.
+				 * @param string $text What is wrong.
+				 */
+				do_action( 'pulsewarden_alert_opened', $key, $res['text'] );
 				/* translators: 1: check name, 2: site name */
 				self::email( sprintf( __( '%1$s problem on %2$s', 'pulsewarden' ), $labels[ $key ], wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ), $res['text'], 'issue' );
 			} elseif ( 'issue' !== $res['state'] && $open ) {
@@ -447,6 +454,13 @@ class PulseWarden_Monitor {
 					human_time_diff( $since )
 				);
 				PulseWarden_Store::log( 'alert', 0, $key . '|resolved|' . $text );
+				/**
+				 * A health problem is over.
+				 *
+				 * @param string $key  Check key.
+				 * @param string $text What is normal again.
+				 */
+				do_action( 'pulsewarden_alert_resolved', $key, $text );
 				if ( PulseWarden_Settings::on( 'resolved_email' ) ) {
 					/* translators: 1: check name, 2: site name */
 					self::email( sprintf( __( '%1$s back to normal on %2$s', 'pulsewarden' ), $labels[ $key ], wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ), $text, 'ok' );

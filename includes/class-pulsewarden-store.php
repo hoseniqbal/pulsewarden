@@ -101,6 +101,20 @@ class PulseWarden_Store {
 	}
 
 	/**
+	 * Rows of a type between two times.
+	 *
+	 * @param string $type Type.
+	 * @param int    $from Unix time.
+	 * @param int    $to   Unix time.
+	 * @return int
+	 */
+	public static function count_between( $type, $from, $to ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- own table, report.
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE type = %s AND created_at >= %s AND created_at < %s', self::table(), $type, gmdate( 'Y-m-d H:i:s', (int) $from ), gmdate( 'Y-m-d H:i:s', (int) $to ) ) );
+	}
+
+	/**
 	 * Time of the newest row of a type.
 	 *
 	 * @param string $type Type.
