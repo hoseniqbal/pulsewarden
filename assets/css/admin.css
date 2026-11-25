@@ -662,3 +662,4 @@
 	.pulsewarden .pw-checks li { grid-template-columns: 16px 1fr; padding: 18px 20px; }
 	.pulsewarden .pw-checks li > .pulsewarden-tag { grid-column: 2; justify-self: start; }
 }
+.pulsewarden .pulsewarden-table td:nth-child(2) { white-space: nowrap; }

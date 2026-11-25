@@ -305,7 +305,7 @@ class PulseWarden_Monitor {
 					'state' => 'issue',
 					'text'  => sprintf(
 						/* translators: 1: failed payments, 2: percent */
-						__( '%1$s payments failed in the last hour (%2$s%% of orders). Check your payment gateway, or a card testing attack may be running.', 'pulsewarden' ),
+						_n( '%1$s payment failed in the last hour (%2$s%% of orders). Check your payment gateway, or a card testing attack may be running.', '%1$s payments failed in the last hour (%2$s%% of orders). Check your payment gateway, or a card testing attack may be running.', $failed, 'pulsewarden' ),
 						number_format_i18n( $failed ),
 						number_format_i18n( $percent )
 					),
@@ -331,12 +331,18 @@ class PulseWarden_Monitor {
 			if ( $errors >= (int) $s::get( 'errors_min' ) && $errors >= 3 * $usual ) {
 				$out['errors'] = array(
 					'state' => 'issue',
-					'text'  => sprintf(
-						/* translators: 1: errors, 2: usual errors per hour */
-						__( '%1$s checkout errors in the last hour, usually about %2$s. Customers may not be able to finish their order.', 'pulsewarden' ),
-						number_format_i18n( $errors ),
-						number_format_i18n( $usual, 1 )
-					),
+					'text'  => $usual < 0.1
+						? sprintf(
+							/* translators: %s: errors */
+							_n( '%s checkout error in the last hour, usually none. Customers may not be able to finish their order.', '%s checkout errors in the last hour, usually none. Customers may not be able to finish their order.', $errors, 'pulsewarden' ),
+							number_format_i18n( $errors )
+						)
+						: sprintf(
+							/* translators: 1: errors, 2: usual errors per hour */
+							_n( '%1$s checkout error in the last hour, usually about %2$s. Customers may not be able to finish their order.', '%1$s checkout errors in the last hour, usually about %2$s. Customers may not be able to finish their order.', $errors, 'pulsewarden' ),
+							number_format_i18n( $errors ),
+							number_format_i18n( $usual, 1 )
+						),
 				);
 			} else {
 				$out['errors'] = array(
