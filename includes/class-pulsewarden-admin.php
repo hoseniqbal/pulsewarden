@@ -57,11 +57,15 @@ class PulseWarden_Admin {
 	 * @return array
 	 */
 	private static function tabs() {
-		return array(
+		$tabs = array(
 			'overview' => __( 'Overview', 'pulsewarden' ),
 			'alerts'   => __( 'Alerts', 'pulsewarden' ),
 			'settings' => __( 'Settings', 'pulsewarden' ),
 		);
+		if ( ! class_exists( 'PWP_Plugin' ) ) {
+			$tabs['pro'] = __( 'Pro', 'pulsewarden' );
+		}
+		return $tabs;
 	}
 
 	/**
@@ -98,7 +102,7 @@ class PulseWarden_Admin {
 		add_menu_page( __( 'PulseWarden', 'pulsewarden' ), __( 'PulseWarden', 'pulsewarden' ), self::CAP, self::PAGE, array( __CLASS__, 'render' ), $icon, 57 );
 		add_submenu_page( self::PAGE, __( 'Overview', 'pulsewarden' ), __( 'Overview', 'pulsewarden' ), self::CAP, self::PAGE, array( __CLASS__, 'render' ) );
 		$tabs = self::tabs();
-		foreach ( array( 'alerts', 'settings' ) as $tab ) {
+		foreach ( array_intersect( array_keys( self::tabs() ), array( 'alerts', 'settings', 'pro' ) ) as $tab ) {
 			add_submenu_page( self::PAGE, $tabs[ $tab ], $tabs[ $tab ], self::CAP, 'admin.php?page=' . self::PAGE . '&tab=' . $tab );
 		}
 	}
@@ -193,7 +197,7 @@ class PulseWarden_Admin {
 				</div>
 				<nav class="pulsewarden-tabs" aria-label="<?php esc_attr_e( 'PulseWarden sections', 'pulsewarden' ); ?>">
 					<?php foreach ( self::tabs() as $key => $label ) : ?>
-						<a href="<?php echo esc_url( self::url( $key ) ); ?>"<?php echo $key === $tab ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $label ); ?></a>
+						<a href="<?php echo esc_url( self::url( $key ) ); ?>"<?php echo 'pro' === $key ? ' class="ow-tab-pro"' : ''; ?><?php echo $key === $tab ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $label ); ?></a>
 					<?php endforeach; ?>
 				</nav>
 			</div>
@@ -204,6 +208,8 @@ class PulseWarden_Admin {
 				self::render_settings();
 			} elseif ( 'alerts' === $tab ) {
 				self::render_alerts();
+			} elseif ( 'pro' === $tab ) {
+				self::render_pro();
 			} else {
 				self::render_overview();
 			}
@@ -631,5 +637,47 @@ class PulseWarden_Admin {
 		PulseWarden_Monitor::run();
 		wp_safe_redirect( self::url( 'overview', array( 'pw_msg' => 'checked' ) ) );
 		exit;
+	}
+	/**
+	 * Pro page: what the add-on adds. Shows "Coming soon" until a store link is set.
+	 *
+	 * @return void
+	 */
+	private static function render_pro() {
+		$points = array(
+			__( 'Instant alerts on Slack, Discord, Telegram or any webhook', 'pulsewarden' ),
+			__( 'A log of plugin, theme and WordPress updates and activations', 'pulsewarden' ),
+			__( 'Every alert lists the changes from the 6 hours before', 'pulsewarden' ),
+			__( 'Weekly store health report against the week before', 'pulsewarden' ),
+		);
+		/**
+		 * Where to buy PulseWarden Pro. Empty shows "Coming soon".
+		 *
+		 * @param string $url URL.
+		 */
+		$buy = (string) apply_filters( 'pulsewarden_pro_url', '' );
+		?>
+		<section class="ow-sale">
+			<div class="ow-sale-main">
+				<h2><?php esc_html_e( 'PulseWarden Pro', 'pulsewarden' ); ?></h2>
+				<p><?php esc_html_e( 'Hear about problems on your phone within minutes, and see what changed on the site right before.', 'pulsewarden' ); ?></p>
+				<ul class="ow-points">
+					<?php foreach ( $points as $point ) : ?>
+						<li><?php echo esc_html( $point ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+			<div class="ow-sale-aside">
+				<span class="ow-pro-badge"><?php esc_html_e( 'Pro', 'pulsewarden' ); ?></span>
+				<h3 style="margin-top:14px"><?php esc_html_e( 'A separate add-on', 'pulsewarden' ); ?></h3>
+				<p><?php esc_html_e( 'Everything you use today stays free, with no limits. Pro adds the features on the left.', 'pulsewarden' ); ?></p>
+				<?php if ( '' === $buy ) : ?>
+					<p><strong><?php esc_html_e( 'Coming soon.', 'pulsewarden' ); ?></strong></p>
+				<?php else : ?>
+					<a class="button ow-btn-gold" href="<?php echo esc_url( $buy ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'See plans', 'pulsewarden' ); ?></a>
+				<?php endif; ?>
+			</div>
+		</section>
+		<?php
 	}
 }
